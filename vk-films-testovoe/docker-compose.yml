@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  app:
+    image: prod-service:local
+    container_name: filmoteka
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_DB_DRIVER=sqlite3
+      - APP_DB_PATH=/app/vk-films-testovoe/cmd/main/storage.db

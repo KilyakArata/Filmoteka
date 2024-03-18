@@ -1,0 +1,239 @@
+openapi: 3.0.0
+info:
+  title: Filmoteka API
+  version: 1.0.0
+  description: REST API для управления базой фильмов и актёров
+  storage_path: './storage.db'
+server:
+  adress: ':8080'
+  timeout: 4s
+  idle_timeout: 30s
+paths:
+  /actors:
+    get:
+      summary: Получить список актёров
+      description: Возвращает список всех актёров в базе данных
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Actor'
+    post:
+      summary: Добавить актёра
+      description: Добавляет информацию о новом актёре в базу данных
+      security:
+        adminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Actor'
+      responses:
+        '201':
+          description: Успешное создание
+        '400':
+          description: Ошибка в запросе
+  /actors/{actorId}:
+    get:
+      summary: Получить информацию об актёре
+      description: Возвращает информацию об указанном актёре
+      parameters:
+        - $ref: '#/components/parameters/actorId'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Actor'
+        '404':
+          description: Актёр не найден
+    put:
+      summary: Изменить информацию об актёре
+      description: Обновляет информацию об указанном актёре
+      security:
+        adminAuth: []
+      parameters:
+        $ref: '#/components/parameters/actorId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Actor'
+      responses:
+        '200':
+          description: Успешное обновление
+        '400':
+          description: Ошибка в запросе
+        '404':
+          description: Актёр не найден
+    delete:
+      summary: Удалить информацию об актёре
+      description: Удаляет информацию об указанном актёре из базы данных
+      security:
+        adminAuth: []
+      parameters:
+        $ref: '#/components/parameters/actorId'
+      responses:
+        '204':
+          description: Успешное удаление
+        '404':
+          description: Актёр не найден
+  /films:
+    get:
+      summary: Получить список фильмов
+      description: Возвращает список всех фильмов в базе данных
+      parameters:
+        name: sort
+          in: query
+          description: Параметр сортировки (name, rating, release_date)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Film'
+    post:
+      summary: Добавить фильм
+      description: Добавляет информацию о новом фильме в базу данных
+      security:
+        adminAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Film'
+      responses:
+        '201':
+          description: Успешное создание
+        '400':
+          description: Ошибка в запросе
+  /films/{filmId}:
+    get:
+      summary: Получить информацию о фильме
+      description: Возвращает информацию о указанном фильме
+      parameters:
+        - $ref: '#/components/parameters/filmId'
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Film'
+        '404':
+          description: Фильм не найден
+    put:
+      summary: Изменить информацию о фильме
+      description: Обновляет информацию о указанном фильме
+      security:
+        adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/filmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Film'
+      responses:
+        '200':
+          description: Успешное обновление
+        '400':
+          description: Ошибка в запросе
+        '404':
+          description: Фильм не найден
+    delete:
+      summary: Удалить информацию о фильме
+      description: Удаляет информацию о указанном фильме из базы данных
+      security:
+        adminAuth: []
+      parameters:
+        - $ref: '#/components/parameters/filmId'
+      responses:
+        '204':
+          description: Успешное удаление
+        '404':
+          description: Фильм не найден
+components:
+  parameters:
+    actorId:
+      name: actorId
+      in: path
+      description: ID актёра
+      required: true
+      schema:
+        $ref: "#/components/schemas/Actor"
+    filmId:
+      name: filmId
+      in: path
+      description: ID фильма
+      required: true
+      schema:
+        $ref: "#/components/schemas/Film"
+  schemas:
+    Actor:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        gender:
+          type: string
+        birth_date:
+          type: string
+          format: date(dd.mm.yyyy)
+        films:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - gender
+        - birth_date
+    Film:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        release_date:
+          type: string
+          format: date(dd.mm.yyyy)
+        rating:
+          type: number
+          minimum: 0
+          maximum: 10
+        actors:
+          type: array
+          items:
+            type: string
+      required:
+        - title
+        - release_date
+        - rating
+security:
+  - adminAuth: []
+  - userAuth: []
+securitySchemes:
+  adminAuth:
+    type: apiKey
+    in: header
+    name: Authorization
+    description: Аутентификационный
